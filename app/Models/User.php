@@ -105,6 +105,50 @@ final class User extends Authenticatable
     }
 
     /**
+     * Add coins to the user's total.
+     */
+    public function addCoins(int $amount): void
+    {
+        $this->increment('total_coins', $amount);
+    }
+
+    /**
+     * Update the user's cleaning streak.
+     */
+    public function updateStreak(): void
+    {
+        $now = now();
+        $lastCleaned = $this->last_cleaned_at;
+
+        if ($lastCleaned === null) {
+            // First cleaning ever
+            $this->current_streak = 1;
+        } elseif ($lastCleaned->isToday()) {
+            // Already cleaned today, no change
+            return;
+        } elseif ($lastCleaned->isYesterday()) {
+            // Cleaned yesterday, increment streak
+            $this->increment('current_streak');
+        } else {
+            // Streak broken, reset to 1
+            $this->current_streak = 1;
+        }
+
+        $this->last_cleaned_at = $now;
+        $this->save();
+    }
+
+    /**
+     * Reset the user's cleaning streak.
+     */
+    public function resetStreak(): void
+    {
+        $this->update([
+            'current_streak' => 0,
+        ]);
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -114,6 +158,8 @@ final class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'total_coins' => 'integer',
+            'current_streak' => 'integer',
             'last_cleaned_at' => 'datetime',
         ];
     }
