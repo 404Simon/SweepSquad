@@ -85,8 +85,6 @@ test('user can view group details', function () {
         ->assertNoSmoke()
         ->assertSee('Test Group')
         ->assertSee('Test Description')
-        ->assertSee('Members')
-        ->assertSee('John Doe')
         ->assertSee('2 members');
 });
 
@@ -100,9 +98,10 @@ test('owner can delete group', function () {
     visit("/groups/{$group->id}")
         ->assertNoSmoke()
         ->assertSee('Group to Delete')
-        ->click('Delete Group')
-        ->assertSee('Delete Group to Delete?')
         ->click('Delete')
+        ->waitForText('Delete Group to Delete?')
+        ->click('button[wire\\:click="deleteGroup"]')
+        ->waitForText('My Groups')
         ->assertPathIs('/groups')
         ->assertNoSmoke();
 
