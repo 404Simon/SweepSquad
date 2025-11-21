@@ -1,0 +1,42 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('cleaning_logs', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('cleaning_item_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('group_id')->constrained()->onDelete('cascade');
+            $table->integer('dirtiness_at_clean')->nullable();
+            $table->integer('coins_earned')->default(0);
+            $table->text('notes')->nullable();
+            $table->string('photo')->nullable();
+            $table->timestamp('cleaned_at')->useCurrent();
+            $table->timestamps();
+
+            $table->index('cleaning_item_id');
+            $table->index('user_id');
+            $table->index('group_id');
+            $table->index('cleaned_at');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('cleaning_logs');
+    }
+};

@@ -25,6 +25,9 @@ final class User extends Authenticatable
         'name',
         'email',
         'password',
+        'total_coins',
+        'current_streak',
+        'last_cleaned_at',
     ];
 
     /**
@@ -52,6 +55,56 @@ final class User extends Authenticatable
     }
 
     /**
+     * Get the groups this user owns.
+     */
+    public function ownedGroups(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Group::class, 'owner_id');
+    }
+
+    /**
+     * Get the groups this user is a member of.
+     */
+    public function groups(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Group::class, 'group_members')
+            ->withPivot('role', 'joined_at')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the group memberships for this user.
+     */
+    public function groupMemberships(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(GroupMember::class);
+    }
+
+    /**
+     * Get the cleaning logs for this user.
+     */
+    public function cleaningLogs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(CleaningLog::class);
+    }
+
+    /**
+     * Get the achievements for this user.
+     */
+    public function achievements(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(UserAchievement::class);
+    }
+
+    /**
+     * Get the group invites created by this user.
+     */
+    public function createdInvites(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(GroupInvite::class, 'created_by');
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -61,6 +114,7 @@ final class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'last_cleaned_at' => 'datetime',
         ];
     }
 }
