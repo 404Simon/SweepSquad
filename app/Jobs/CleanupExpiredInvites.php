@@ -19,6 +19,7 @@ final class CleanupExpiredInvites implements ShouldQueue
     {
         GroupInvite::query()
             ->expired()
+            ->unused()
             ->delete();
     }
 }
