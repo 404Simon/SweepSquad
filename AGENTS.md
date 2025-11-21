@@ -18,8 +18,10 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - laravel/mcp (MCP) - v0
 - laravel/pint (PINT) - v1
 - laravel/sail (SAIL) - v1
+- nunomaduro/essentials (ESSENTIALS) - v1
 - pestphp/pest (PEST) - v4
 - phpunit/phpunit (PHPUNIT) - v12
+- rector/rector (RECTOR) - v1
 - tailwindcss (TAILWINDCSS) - v4
 
 ## Conventions
@@ -121,6 +123,36 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - If you're creating a generic PHP class, use `php artisan make:class`.
 - Pass `--no-interaction` to all Artisan commands to ensure they work without user input. You should also pass the correct `--options` to ensure correct behavior.
 
+### Actions Pattern
+- For business logic, use the Actions pattern. Create action classes using `php artisan make:action [ActionName]`.
+- Actions should be `final readonly` classes with a `handle()` method that contains the business logic.
+- Actions should live in `app/Actions/` directory (or appropriate subdirectories like `app/Actions/Users/`).
+- Wrap database operations within a `DB::transaction()` when appropriate to ensure data consistency.
+- Actions promote single responsibility and cleaner controllers by extracting complex business logic into dedicated classes.
+
+<code-snippet name="Action Pattern Example" lang="php">
+<?php
+
+declare(strict_types=1);
+
+namespace App\Actions;
+
+use Illuminate\Support\Facades\DB;
+
+final readonly class CreateUserAction
+{
+    /**
+     * Execute the action.
+     */
+    public function handle(): void
+    {
+        DB::transaction(function (): void {
+            //
+        });
+    }
+}
+</code-snippet>
+
 ### Database
 - Always use proper Eloquent relationship methods with return type hints. Prefer relationship methods over raw queries or manual joins.
 - Use Eloquent models and relationships before suggesting raw database queries
@@ -135,6 +167,7 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - For APIs, default to using Eloquent API Resources and API versioning unless existing API routes do not, then you should follow existing application convention.
 
 ### Controllers & Validation
+- Controllers should be thin - delegate business logic to Action classes.
 - Always create Form Request classes for validation rather than inline validation in controllers. Include both validation rules and custom error messages.
 - Check sibling Form Requests to see if the application uses array or string based validation rules.
 
@@ -427,6 +460,49 @@ $delete = fn(Product $product) => $product->delete();
 
 - You must run `vendor/bin/pint --dirty` before finalizing changes to ensure your code matches the project's expected style.
 - Do not run `vendor/bin/pint --test`, simply run `vendor/bin/pint` to fix any formatting issues.
+- This project uses an enhanced Pint configuration provided by the essentials package with rules including:
+  - `declare_strict_types` - Enforces strict types in all files
+  - `final_class` - Enforces final classes by default
+  - `ordered_class_elements` - Orders class elements by visibility and type
+  - `strict_comparison` - Enforces strict comparison in all files
+
+
+=== rector/core rules ===
+
+## Rector - Automated Code Refactoring
+
+- After making significant code changes, you should run `vendor/bin/rector` to automatically refactor and improve code quality.
+- Rector is configured with the following prepared sets:
+  - `deadCode` - Removes dead code from the codebase
+  - `codeQuality` - Improves code quality by applying best practices
+  - `typeDeclarations` - Adds type declarations to the codebase
+  - `privatization` - Privatizes class properties and methods where possible
+  - `earlyReturn` - Enforces early return statements
+  - `strictBooleans` - Enforces strict boolean checks
+- Rector processes files in: `app/`, `bootstrap/app.php`, `database/`, and `public/`
+- Run Rector with `vendor/bin/rector` to apply changes, or `vendor/bin/rector --dry-run` to preview changes
+- If Rector makes changes, review them carefully and run tests to ensure nothing broke
+
+
+=== essentials/core rules ===
+
+## Laravel Essentials Package
+
+- This application uses the `nunomaduro/essentials` package which provides better defaults for Laravel applications
+- The following features are enabled by default (configured in `config/essentials.php`):
+  - **Strict Models** - Prevents lazy loading, accessing missing attributes, and silently discarding attributes
+  - **Auto Eager Loading** - Automatically eager loads relationships defined in model's `$with` property
+  - **Immutable Dates** - Uses `CarbonImmutable` instead of mutable date objects
+  - **Force HTTPS** - Forces all generated URLs to use `https://` (production only)
+  - **Safe Console** - Blocks potentially destructive Artisan commands in production
+  - **Asset Prefetching** - Configures Laravel Vite to preload assets more aggressively
+  - **Prevent Stray Requests** - Configures Laravel Http Facade to prevent stray requests during tests
+  - **Fake Sleep** - Configures Laravel Sleep Facade to be faked during tests
+
+### Important Behavior Changes
+- **Lazy Loading is Blocked** - Always eager load relationships or use `->load()` explicitly. N+1 queries will throw exceptions in development.
+- **Missing Attributes Throw Errors** - Accessing undefined model attributes will throw exceptions instead of returning null.
+- **Dates are Immutable** - All Carbon date instances are immutable. Modifying dates returns new instances.
 
 
 === pest/core rules ===
