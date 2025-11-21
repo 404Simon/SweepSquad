@@ -11,15 +11,17 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Volt\Component;
 
-use function Livewire\Volt\{layout};
+use function Livewire\Volt\layout;
 
 layout('components.layouts.app');
 
-new class extends Component {
+new class extends Component
+{
     #[Locked]
     public Group $group;
 
     public string $filter = 'all';
+
     public string $sortBy = 'dirtiness';
 
     public function mount($id): void
@@ -30,7 +32,7 @@ new class extends Component {
             ->findOrFail($id);
 
         // Check if user is a member
-        if (!$this->group->members->contains(Auth::id())) {
+        if (! $this->group->members->contains(Auth::id())) {
             abort(403, 'You are not a member of this group.');
         }
     }
@@ -61,7 +63,7 @@ new class extends Component {
             session()->flash('success', 'You have left the group.');
 
             $this->redirect(route('groups.index'), navigate: true);
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             session()->flash('error', $e->getMessage());
         }
     }
@@ -70,12 +72,12 @@ new class extends Component {
     {
         // Only owner and admins can remove members
         $currentMember = $this->group->members->firstWhere('id', Auth::id());
-        if (!$currentMember || !in_array($currentMember->pivot->role, [GroupRole::Owner, GroupRole::Admin])) {
+        if (! $currentMember || ! in_array($currentMember->pivot->role, [GroupRole::Owner, GroupRole::Admin])) {
             abort(403, 'You do not have permission to remove members.');
         }
 
         $userToRemove = $this->group->members->firstWhere('id', $userId);
-        if (!$userToRemove) {
+        if (! $userToRemove) {
             return;
         }
 
@@ -107,7 +109,7 @@ new class extends Component {
         $this->sortBy = $sortBy;
     }
 
-    public function getItemsProperty(): \Illuminate\Support\Collection
+    public function getItemsProperty(): Illuminate\Support\Collection
     {
         $query = $this->group->cleaningItems()
             ->with(['lastCleanedByUser', 'children.lastCleanedByUser', 'children.children.lastCleanedByUser'])
@@ -126,9 +128,9 @@ new class extends Component {
 
         // Apply sorting
         return match ($this->sortBy) {
-            'dirtiness' => $items->sortByDesc(fn($item) => $item->dirtiness_percentage),
-            'coins' => $items->sortByDesc(fn($item) => $item->coins_available),
-            'last_cleaned' => $items->sortBy(fn($item) => $item->last_cleaned_at?->timestamp ?? 0),
+            'dirtiness' => $items->sortByDesc(fn ($item) => $item->dirtiness_percentage),
+            'coins' => $items->sortByDesc(fn ($item) => $item->coins_available),
+            'last_cleaned' => $items->sortBy(fn ($item) => $item->last_cleaned_at?->timestamp ?? 0),
             'name' => $items->sortBy('name'),
             default => $items,
         };
@@ -140,9 +142,9 @@ new class extends Component {
 
         return [
             'total' => $allItems->count(),
-            'overdue' => $allItems->filter(fn($item) => $item->is_overdue)->count(),
-            'needs_attention' => $allItems->filter(fn($item) => $item->needs_attention && !$item->is_overdue)->count(),
-            'clean' => $allItems->filter(fn($item) => $item->is_freshly_clean)->count(),
+            'overdue' => $allItems->filter(fn ($item) => $item->is_overdue)->count(),
+            'needs_attention' => $allItems->filter(fn ($item) => $item->needs_attention && ! $item->is_overdue)->count(),
+            'clean' => $allItems->filter(fn ($item) => $item->is_freshly_clean)->count(),
         ];
     }
 
@@ -259,6 +261,13 @@ new class extends Component {
                 <flux:heading size="lg" class="text-green-600 dark:text-green-400">{{ $stats['clean'] }}</flux:heading>
             </div>
         </div>
+
+        {{-- Invite Management Section (Owner/Admin only) --}}
+        @if($canManageMembers)
+            <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 p-6 mb-6">
+                <livewire:invites.list :group="$group" />
+            </div>
+        @endif
 
         {{-- Filters and Sorting --}}
         <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 p-4 mb-6">
@@ -426,4 +435,9 @@ new class extends Component {
             </div>
         </div>
     </flux:modal>
+
+    <!-- Create Invite Modal -->
+    @if($canManageMembers)
+        <livewire:invites.create :group="$group" />
+    @endif
 </div>

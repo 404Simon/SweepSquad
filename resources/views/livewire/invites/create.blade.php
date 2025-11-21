@@ -6,9 +6,12 @@ use App\Models\Group;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
 
-new class extends Component {
+new class extends Component
+{
     public Group $group;
+
     public string $type = 'permanent';
+
     public ?string $expiresInDays = null;
 
     public function mount(Group $group): void
@@ -36,6 +39,7 @@ new class extends Component {
         $invite = $action->handle($this->group, Auth::user(), $inviteType, $expiresAt);
 
         $this->dispatch('invite-created', inviteId: $invite->id);
+        $this->dispatch('close-create-invite-modal');
 
         session()->flash('success', 'Invite created successfully!');
 
@@ -56,7 +60,7 @@ new class extends Component {
 
 <div>
     <flux:modal name="create-invite" class="w-full max-w-md">
-        <form wire:submit="createInvite" class="space-y-6">
+        <form wire:submit="createInvite" class="space-y-6" x-on:close-create-invite-modal.window="$flux.modal('create-invite').close()">
             <div>
                 <flux:heading size="lg">Create Invite Link</flux:heading>
                 <flux:text>Generate a link to invite people to {{ $group->name }}</flux:text>

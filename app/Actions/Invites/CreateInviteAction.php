@@ -21,7 +21,7 @@ final readonly class CreateInviteAction
         return DB::transaction(fn (): GroupInvite => GroupInvite::create([
             'group_id' => $group->id,
             'created_by' => $creator->id,
-            'type' => $type,
+            'type' => $type->value,
             'expires_at' => $expiresAt,
         ]));
     }
