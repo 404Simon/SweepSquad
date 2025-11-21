@@ -140,25 +140,25 @@ new class extends Component {
 <div x-on:item-cleaned.window="$wire.call('refreshItem')">
     <div class="max-w-4xl mx-auto px-4 py-8">
         {{-- Breadcrumb Navigation --}}
-        <nav class="mb-6">
+        <nav aria-label="Breadcrumb" class="mb-6">
             <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">
-                <a href="{{ route('groups.show', $item->group_id) }}" wire:navigate class="hover:text-zinc-700 dark:hover:text-zinc-300">
+                <a href="{{ route('groups.show', $item->group_id) }}" wire:navigate class="hover:text-zinc-700 dark:hover:text-zinc-300 focus-ring rounded">
                     {{ $item->group->name }}
                 </a>
                 @if ($item->parent)
-                    <span class="mx-2">/</span>
-                    <a href="{{ route('cleaning-items.show', $item->parent->id) }}" wire:navigate class="hover:text-zinc-700 dark:hover:text-zinc-300">
+                    <span class="mx-2" aria-hidden="true">/</span>
+                    <a href="{{ route('cleaning-items.show', $item->parent->id) }}" wire:navigate class="hover:text-zinc-700 dark:hover:text-zinc-300 focus-ring rounded">
                         {{ $item->parent->name }}
                     </a>
                 @endif
-                <span class="mx-2">/</span>
-                <span class="text-zinc-900 dark:text-zinc-100">{{ $item->name }}</span>
+                <span class="mx-2" aria-hidden="true">/</span>
+                <span class="text-zinc-900 dark:text-zinc-100" aria-current="page">{{ $item->name }}</span>
             </flux:text>
         </nav>
 
         {{-- Header --}}
-        <div class="mb-6 flex items-center justify-between">
-            <div>
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex-1">
                 <flux:heading size="lg">{{ $item->name }}</flux:heading>
                 @if ($item->description)
                     <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400 mt-1">
@@ -171,6 +171,7 @@ new class extends Component {
                     variant="ghost"
                     wire:navigate
                     href="{{ route('cleaning-items.edit', $item->id) }}"
+                    class="touch-target w-full sm:w-auto"
                 >
                     Edit
                 </flux:button>
@@ -219,13 +220,16 @@ new class extends Component {
                     </div>
 
                     {{-- Action Buttons --}}
-                    <div class="mt-6 flex gap-3">
-                        <livewire:cleaning-items.clean-button :item-id="$item->id" class="flex-1 md:flex-none" />
+                    <div class="mt-6 flex flex-col sm:flex-row gap-3">
+                        <div class="flex-1 sm:flex-none">
+                            <livewire:cleaning-items.clean-button :item-id="$item->id" />
+                        </div>
                         @if ($this->isAdmin)
                             <flux:button
                                 variant="ghost"
                                 wire:navigate
                                 href="{{ route('cleaning-items.edit', $item->id) }}"
+                                class="touch-target"
                             >
                                 Edit Item
                             </flux:button>
@@ -282,11 +286,12 @@ new class extends Component {
             @endif
 
             {{-- Navigation Buttons --}}
-            <div class="flex gap-3">
+            <div class="flex flex-col sm:flex-row gap-3">
                 <flux:button
                     variant="primary"
                     wire:navigate
                     href="{{ route('cleaning-items.create', ['groupId' => $item->group_id, 'parentId' => $item->id]) }}"
+                    class="touch-target"
                 >
                     Add Sub-Item
                 </flux:button>
@@ -294,6 +299,7 @@ new class extends Component {
                     variant="ghost"
                     wire:navigate
                     href="{{ route('groups.show', $item->group_id) }}"
+                    class="touch-target"
                 >
                     Back to Group
                 </flux:button>

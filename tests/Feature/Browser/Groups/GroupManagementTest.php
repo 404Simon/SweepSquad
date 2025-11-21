@@ -137,7 +137,7 @@ test('empty state shows when user has no groups', function () {
 
     visit('/groups')
         ->assertNoSmoke()
-        ->assertSee("You're not part of any groups yet")
+        ->assertSee('Welcome to SweepSquad!')
         ->assertSee('Create Your First Group');
 });
 

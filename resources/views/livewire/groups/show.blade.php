@@ -195,12 +195,13 @@ new class extends Component {
                 </flux:text>
             </div>
 
-            <div class="flex gap-2">
+            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                 @if($isOwner || $isAdmin)
                     <flux:button
                         variant="primary"
                         wire:navigate
                         href="{{ route('cleaning-items.create', ['groupId' => $group->id]) }}"
+                        class="touch-target"
                     >
                         Add Item
                     </flux:button>
@@ -211,6 +212,7 @@ new class extends Component {
                         variant="ghost"
                         wire:navigate
                         href="{{ route('groups.edit', $group) }}"
+                        class="touch-target"
                     >
                         Edit Group
                     </flux:button>
@@ -219,6 +221,7 @@ new class extends Component {
                         <flux:button
                             variant="danger"
                             x-on:click.prevent="$dispatch('open-modal', 'confirm-delete-group')"
+                            class="touch-target"
                         >
                             Delete
                         </flux:button>
@@ -228,6 +231,7 @@ new class extends Component {
                         <flux:button
                             variant="danger"
                             x-on:click.prevent="$dispatch('open-modal', 'confirm-leave-group')"
+                            class="touch-target"
                         >
                             Leave Group
                         </flux:button>
@@ -259,44 +263,53 @@ new class extends Component {
         {{-- Filters and Sorting --}}
         <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 p-4 mb-6">
             <div class="flex flex-col md:flex-row justify-between gap-4">
-                <div class="flex gap-2 flex-wrap">
-                    <flux:text class="text-sm font-medium mr-2 self-center">Show:</flux:text>
+                <div class="flex gap-2 flex-wrap items-center">
+                    <flux:text class="text-sm font-medium mr-2">Show:</flux:text>
                     <flux:button
                         variant="{{ $filter === 'all' ? 'primary' : 'ghost' }}"
                         size="sm"
                         wire:click="setFilter('all')"
+                        wire:loading.attr="disabled"
                     >
-                        All
+                        <span wire:loading.remove wire:target="setFilter">All</span>
+                        <span wire:loading wire:target="setFilter('all')">...</span>
                     </flux:button>
                     <flux:button
                         variant="{{ $filter === 'overdue' ? 'primary' : 'ghost' }}"
                         size="sm"
                         wire:click="setFilter('overdue')"
+                        wire:loading.attr="disabled"
                     >
-                        Overdue
+                        <span wire:loading.remove wire:target="setFilter">Overdue</span>
+                        <span wire:loading wire:target="setFilter('overdue')">...</span>
                     </flux:button>
                     <flux:button
                         variant="{{ $filter === 'needs_attention' ? 'primary' : 'ghost' }}"
                         size="sm"
                         wire:click="setFilter('needs_attention')"
+                        wire:loading.attr="disabled"
                     >
-                        Needs Attention
+                        <span wire:loading.remove wire:target="setFilter">Needs Attention</span>
+                        <span wire:loading wire:target="setFilter('needs_attention')">...</span>
                     </flux:button>
                     <flux:button
                         variant="{{ $filter === 'clean' ? 'primary' : 'ghost' }}"
                         size="sm"
                         wire:click="setFilter('clean')"
+                        wire:loading.attr="disabled"
                     >
-                        Clean
+                        <span wire:loading.remove wire:target="setFilter">Clean</span>
+                        <span wire:loading wire:target="setFilter('clean')">...</span>
                     </flux:button>
                 </div>
 
-                <div class="flex gap-2 flex-wrap">
-                    <flux:text class="text-sm font-medium mr-2 self-center">Sort by:</flux:text>
+                <div class="flex gap-2 flex-wrap items-center">
+                    <flux:text class="text-sm font-medium mr-2">Sort by:</flux:text>
                     <flux:button
                         variant="{{ $sortBy === 'dirtiness' ? 'primary' : 'ghost' }}"
                         size="sm"
                         wire:click="setSortBy('dirtiness')"
+                        wire:loading.attr="disabled"
                     >
                         Dirtiness
                     </flux:button>
@@ -304,6 +317,7 @@ new class extends Component {
                         variant="{{ $sortBy === 'coins' ? 'primary' : 'ghost' }}"
                         size="sm"
                         wire:click="setSortBy('coins')"
+                        wire:loading.attr="disabled"
                     >
                         Coins
                     </flux:button>
@@ -311,6 +325,7 @@ new class extends Component {
                         variant="{{ $sortBy === 'last_cleaned' ? 'primary' : 'ghost' }}"
                         size="sm"
                         wire:click="setSortBy('last_cleaned')"
+                        wire:loading.attr="disabled"
                     >
                         Last Cleaned
                     </flux:button>
@@ -318,6 +333,7 @@ new class extends Component {
                         variant="{{ $sortBy === 'name' ? 'primary' : 'ghost' }}"
                         size="sm"
                         wire:click="setSortBy('name')"
+                        wire:loading.attr="disabled"
                     >
                         Name
                     </flux:button>
@@ -328,20 +344,35 @@ new class extends Component {
         {{-- Cleaning Items Tree --}}
         <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700">
             @if($items->isEmpty())
-                <div class="p-8 text-center">
-                    <flux:text class="text-zinc-500 mb-4">No cleaning items yet.</flux:text>
+                <div class="p-8 text-center animate-fade-in">
+                    <div class="text-5xl mb-3">📝</div>
+                    <flux:heading size="base" class="mb-2">
+                        @if($filter !== 'all')
+                            No {{ $filter === 'overdue' ? 'overdue' : ($filter === 'needs_attention' ? 'items needing attention' : 'clean items') }}
+                        @else
+                            No Cleaning Items
+                        @endif
+                    </flux:heading>
+                    <flux:text class="text-zinc-500 mb-4">
+                        @if($filter !== 'all')
+                            Try changing the filter to see other items.
+                        @else
+                            Add cleaning items to start tracking tasks in this group.
+                        @endif
+                    </flux:text>
                     @if($isOwner || $isAdmin)
                         <flux:button
                             variant="primary"
                             wire:navigate
                             href="{{ route('cleaning-items.create', ['groupId' => $group->id]) }}"
+                            class="touch-target"
                         >
                             Add Your First Item
                         </flux:button>
                     @endif
                 </div>
             @else
-                <div class="divide-y divide-zinc-200 dark:divide-zinc-700">
+                <div class="divide-y divide-zinc-200 dark:divide-zinc-700" wire:loading.class="opacity-50" wire:target="setFilter,setSortBy">
                     @foreach($items as $item)
                         @include('livewire.groups.partials.item-row', ['item' => $item, 'level' => 0])
                     @endforeach
@@ -365,8 +396,9 @@ new class extends Component {
                     <flux:button variant="ghost">Cancel</flux:button>
                 </flux:modal.close>
 
-                <flux:button variant="danger" wire:click="deleteGroup">
-                    Delete
+                <flux:button variant="danger" wire:click="deleteGroup" wire:loading.attr="disabled">
+                    <span wire:loading.remove wire:target="deleteGroup">Delete</span>
+                    <span wire:loading wire:target="deleteGroup">Deleting...</span>
                 </flux:button>
             </div>
         </div>
@@ -387,8 +419,9 @@ new class extends Component {
                     <flux:button variant="ghost">Cancel</flux:button>
                 </flux:modal.close>
 
-                <flux:button variant="danger" wire:click="leaveGroup">
-                    Leave
+                <flux:button variant="danger" wire:click="leaveGroup" wire:loading.attr="disabled">
+                    <span wire:loading.remove wire:target="leaveGroup">Leave</span>
+                    <span wire:loading wire:target="leaveGroup">Leaving...</span>
                 </flux:button>
             </div>
         </div>

@@ -106,8 +106,9 @@ new class extends Component {
                     <flux:button variant="ghost" type="button" wire:click="closeModal">
                         Cancel
                     </flux:button>
-                    <flux:button variant="primary" type="submit">
-                        Confirm Clean
+                    <flux:button variant="primary" type="submit" wire:loading.attr="disabled">
+                        <span wire:loading.remove wire:target="markAsCleaned">Confirm Clean</span>
+                        <span wire:loading wire:target="markAsCleaned">Cleaning...</span>
                     </flux:button>
                 </div>
             </form>
@@ -116,7 +117,7 @@ new class extends Component {
 
     @if ($showSuccess)
         <flux:modal name="success-modal" variant="flyout" wire:model="showSuccess">
-            <div class="space-y-6 text-center">
+            <div class="space-y-6 text-center animate-fade-in">
                 <div class="flex justify-center">
                     <div class="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
                         <svg class="w-12 h-12 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,12 +131,12 @@ new class extends Component {
                     <flux:text class="text-zinc-500 dark:text-zinc-400">
                         You earned
                     </flux:text>
-                    <flux:text class="text-3xl font-bold text-green-600 dark:text-green-400">
-                        {{ $coinsEarned }} coins
+                    <flux:text class="text-4xl font-bold text-green-600 dark:text-green-400 animate-coin-bounce inline-block">
+                        💰 {{ $coinsEarned }} coins
                     </flux:text>
                 </div>
 
-                <flux:button variant="primary" wire:click="closeSuccess" class="w-full">
+                <flux:button variant="primary" wire:click="closeSuccess" class="w-full touch-target">
                     Awesome!
                 </flux:button>
             </div>

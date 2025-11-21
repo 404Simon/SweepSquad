@@ -99,11 +99,12 @@ new class extends Component {
         </div>
 
         <!-- Quick Actions -->
-        <div class="flex gap-3 mb-8">
+        <div class="flex flex-col sm:flex-row gap-3 mb-8">
             <flux:button
                 variant="primary"
                 wire:navigate
                 href="{{ route('groups.create') }}"
+                class="touch-target w-full sm:w-auto"
             >
                 Create Group
             </flux:button>
@@ -111,6 +112,7 @@ new class extends Component {
                 variant="outline"
                 wire:navigate
                 href="{{ route('groups.index') }}"
+                class="touch-target w-full sm:w-auto"
             >
                 View All Groups
             </flux:button>
@@ -130,12 +132,17 @@ new class extends Component {
                 </div>
             </div>
         @else
-            <div class="text-center py-12 mb-8 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700">
-                <flux:text class="text-zinc-500 mb-4">You're not part of any groups yet.</flux:text>
+            <div class="text-center py-12 mb-8 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 animate-fade-in">
+                <div class="text-6xl mb-4">🏠</div>
+                <flux:heading size="base" class="mb-2">No Groups Yet</flux:heading>
+                <flux:text class="text-zinc-500 mb-6">
+                    Create your first group to start tracking cleaning tasks with your household or roommates.
+                </flux:text>
                 <flux:button
                     variant="primary"
                     wire:navigate
                     href="{{ route('groups.create') }}"
+                    class="touch-target"
                 >
                     Create Your First Group
                 </flux:button>
@@ -154,6 +161,14 @@ new class extends Component {
                         />
                     @endforeach
                 </div>
+            </div>
+        @elseif($groups->isNotEmpty())
+            <div class="text-center py-12 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700">
+                <div class="text-5xl mb-3">📊</div>
+                <flux:heading size="base" class="mb-2">No Activity Yet</flux:heading>
+                <flux:text class="text-zinc-500">
+                    Start cleaning items to see your activity here.
+                </flux:text>
             </div>
         @endif
     </div>

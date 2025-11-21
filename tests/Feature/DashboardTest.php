@@ -176,7 +176,7 @@ test('dashboard shows empty state when user has no groups', function () {
     $this->actingAs($user);
 
     Volt::test('dashboard.index')
-        ->assertSee('not part of any groups yet')
+        ->assertSee('No Groups Yet')
         ->assertSee('Create Your First Group');
 });
 

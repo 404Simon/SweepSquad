@@ -65,3 +65,29 @@ test('user can view cleaning item details', function () {
         ->assertSee('Bathroom')
         ->assertSee('Clean the bathroom');
 });
+
+test('user can edit a cleaning item', function () {
+    $user = User::factory()->create();
+    $group = Group::factory()->create(['owner_id' => $user->id]);
+    $group->members()->attach($user->id, ['role' => GroupRole::Owner]);
+    $item = CleaningItem::factory()->create([
+        'group_id' => $group->id,
+        'name' => 'Bathroom',
+        'description' => 'Clean the bathroom',
+        'cleaning_frequency_hours' => 168,
+        'base_coin_reward' => 50,
+    ]);
+
+    actingAs($user);
+
+    visit('/cleaning-items/'.$item->id.'/edit')
+        ->assertNoSmoke()
+        ->assertSee('Edit Cleaning Item')
+        ->fill('name', 'Master Bathroom')
+        ->fill('description', 'Clean the master bathroom thoroughly')
+        ->fill('cleaningFrequencyHours', '72')
+        ->fill('baseCoinReward', '75')
+        ->click('Update Item')
+        ->assertPathIs('/groups/'.$group->id)
+        ->assertSee('Master Bathroom');
+});

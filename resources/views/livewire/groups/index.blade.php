@@ -23,12 +23,13 @@ new class extends Component {
 
 <div>
     <div class="max-w-6xl mx-auto px-4 py-8">
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <flux:heading size="lg">My Groups</flux:heading>
             <flux:button
                 variant="primary"
                 wire:navigate
                 href="{{ route('groups.create') }}"
+                class="touch-target w-full sm:w-auto"
             >
                 Create Group
             </flux:button>
@@ -84,12 +85,17 @@ new class extends Component {
         @endif
 
         @if($groups->isEmpty() && $ownedGroups->isEmpty())
-            <div class="text-center py-12">
-                <flux:text class="text-zinc-500 mb-4">You're not part of any groups yet.</flux:text>
+            <div class="text-center py-16 animate-fade-in">
+                <div class="text-7xl mb-4">🏠</div>
+                <flux:heading size="lg" class="mb-3">Welcome to SweepSquad!</flux:heading>
+                <flux:text class="text-zinc-500 mb-6 max-w-md mx-auto">
+                    Create your first group to start organizing and tracking cleaning tasks with your household or roommates.
+                </flux:text>
                 <flux:button
                     variant="primary"
                     wire:navigate
                     href="{{ route('groups.create') }}"
+                    class="touch-target"
                 >
                     Create Your First Group
                 </flux:button>

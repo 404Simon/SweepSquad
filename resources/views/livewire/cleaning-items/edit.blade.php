@@ -1,33 +1,40 @@
 <?php
 
-use App\Actions\CleaningItems\UpdateCleaningItemAction;
 use App\Actions\CleaningItems\DeleteCleaningItemAction;
+use App\Actions\CleaningItems\UpdateCleaningItemAction;
 use App\Models\CleaningItem;
+use Livewire\Attributes\Locked;
 use Livewire\Volt\Component;
 
-use function Livewire\Volt\{layout, state, mount};
+use function Livewire\Volt\layout;
 
 layout('components.layouts.app');
 
-state([
-    'itemId',
-    'name' => '',
-    'description' => '',
-    'cleaningFrequencyHours' => null,
-    'baseCoinReward' => 0,
-    'item',
-]);
+new class extends Component
+{
+    #[Locked]
+    public CleaningItem $item;
 
-mount(function (int $id) {
-    $this->itemId = $id;
-    $this->item = CleaningItem::query()->findOrFail($id);
-    $this->name = $this->item->name;
-    $this->description = $this->item->description;
-    $this->cleaningFrequencyHours = $this->item->cleaning_frequency_hours;
-    $this->baseCoinReward = $this->item->base_coin_reward;
-});
+    public string $name = '';
 
-new class extends Component {
+    public ?string $description = '';
+
+    public ?int $cleaningFrequencyHours = null;
+
+    public int $baseCoinReward = 0;
+
+    /**
+     * Mount the component.
+     */
+    public function mount(int $id): void
+    {
+        $this->item = CleaningItem::query()->findOrFail($id);
+        $this->name = $this->item->name;
+        $this->description = $this->item->description ?? '';
+        $this->cleaningFrequencyHours = $this->item->cleaning_frequency_hours;
+        $this->baseCoinReward = $this->item->base_coin_reward;
+    }
+
     /**
      * Update the cleaning item.
      */
@@ -59,7 +66,7 @@ new class extends Component {
     public function delete(DeleteCleaningItemAction $action): void
     {
         $groupId = $this->item->group_id;
-        
+
         $action->handle($this->item);
 
         session()->flash('success', 'Cleaning item deleted successfully!');

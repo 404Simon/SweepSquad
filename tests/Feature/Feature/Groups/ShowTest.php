@@ -372,5 +372,5 @@ test('empty state shows when no items exist', function () {
 
     $response = get(route('groups.show', $group));
 
-    $response->assertSee('No cleaning items yet');
+    $response->assertSee('No Cleaning Items');
 });
