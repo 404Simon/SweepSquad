@@ -209,4 +209,24 @@ final class CleaningItem extends Model
             get: fn (): int => $this->getCoinsAvailable(),
         );
     }
+
+    /**
+     * Get the next cleaning time attribute.
+     */
+    protected function nextCleaningAt(): Attribute
+    {
+        return Attribute::make(
+            get: function (): ?\Carbon\CarbonImmutable {
+                if ($this->cleaning_frequency_hours === null || $this->cleaning_frequency_hours <= 0) {
+                    return null;
+                }
+
+                if ($this->last_cleaned_at === null) {
+                    return null;
+                }
+
+                return $this->last_cleaned_at->addHours($this->cleaning_frequency_hours);
+            },
+        );
+    }
 }

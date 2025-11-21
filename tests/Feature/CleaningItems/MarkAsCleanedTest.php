@@ -19,6 +19,8 @@ beforeEach(function () {
         'group_id' => $this->group->id,
         'base_coin_reward' => 100,
         'cleaning_frequency_hours' => 24,
+        'last_cleaned_at' => null,
+        'last_cleaned_by' => null,
     ]);
 });
 
