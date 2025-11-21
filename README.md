@@ -304,6 +304,342 @@ Automatic achievement detection for:
 - Revoke invites at any time with the "Revoke" button
 - See invite status (active, used, or expired)
 
+## Deployment
+
+### Pre-Deployment Checklist
+
+1. **Environment Configuration**
+   - Copy `.env.example` to `.env`
+   - Set `APP_ENV=production`
+   - Set `APP_DEBUG=false`
+   - Set `APP_URL` to your production domain
+   - Generate a strong `APP_KEY` with `php artisan key:generate`
+   - Set `SESSION_SECURE_COOKIE=true` (requires HTTPS)
+   - Configure database connection (SQLite, MySQL, or PostgreSQL)
+   - Configure mail settings for notifications
+   - Set proper `MAIL_FROM_ADDRESS` and `MAIL_FROM_NAME`
+
+2. **Database Setup**
+   - For SQLite: Create the database file and set proper permissions
+     ```bash
+     touch database/database.sqlite
+     chmod 664 database/database.sqlite
+     ```
+   - For MySQL/PostgreSQL: Create database and user, update `.env`
+   - Run migrations:
+     ```bash
+     php artisan migrate --force
+     ```
+
+3. **Install Dependencies**
+   ```bash
+   # Install PHP dependencies (production only)
+   composer install --optimize-autoloader --no-dev
+
+   # Install JavaScript dependencies
+   npm ci
+
+   # Build frontend assets
+   npm run build
+   ```
+
+4. **Optimize Application**
+   ```bash
+   # Cache configuration
+   php artisan config:cache
+
+   # Cache routes
+   php artisan route:cache
+
+   # Cache views
+   php artisan view:cache
+   ```
+
+5. **Set File Permissions**
+   ```bash
+   # Ensure storage and bootstrap/cache are writable
+   chmod -R 775 storage bootstrap/cache
+   chown -R www-data:www-data storage bootstrap/cache
+   ```
+
+6. **Configure Web Server**
+   - Point document root to `public/` directory
+   - Enable HTTPS with valid SSL certificate
+   - Configure URL rewriting (see below)
+
+### Web Server Configuration
+
+**Apache (.htaccess included)**
+
+The `public/.htaccess` file handles URL rewriting. Ensure `mod_rewrite` is enabled:
+
+```bash
+sudo a2enmod rewrite
+sudo systemctl restart apache2
+```
+
+**Nginx**
+
+Add this to your server block:
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+    root /path/to/sweepsquad/public;
+
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-Content-Type-Options "nosniff";
+
+    index index.php;
+
+    charset utf-8;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
+    error_page 404 /index.php;
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.4-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}
+```
+
+### Queue Workers & Scheduler
+
+**Queue Worker**
+
+Use Supervisor to keep the queue worker running:
+
+```ini
+[program:sweepsquad-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /path/to/sweepsquad/artisan queue:work --sleep=3 --tries=3 --max-time=3600
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=www-data
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/path/to/sweepsquad/storage/logs/worker.log
+stopwaitsecs=3600
+```
+
+Start the worker:
+```bash
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start sweepsquad-worker:*
+```
+
+**Scheduler**
+
+Add this to your crontab (`crontab -e`):
+
+```cron
+* * * * * cd /path/to/sweepsquad && php artisan schedule:run >> /dev/null 2>&1
+```
+
+The scheduler runs these jobs:
+- `UpdateUserStreaksJob` - Daily at midnight
+- `CleanupExpiredInvites` - Daily at 2am
+
+### Monitoring & Logging
+
+**Logs Location**: `storage/logs/laravel.log`
+
+For production, set in `.env`:
+```env
+LOG_STACK=daily
+LOG_LEVEL=error
+LOG_DAILY_DAYS=14
+```
+
+**Recommended Monitoring**:
+- Set up uptime monitoring (e.g., UptimeRobot, Pingdom)
+- Optional: Integrate error tracking (Sentry, Flare, Bugsnag)
+- Monitor disk space for SQLite database growth
+- Monitor queue worker status
+
+### Backup Strategy
+
+**Database Backups**
+
+For SQLite:
+```bash
+# Backup the database file
+cp database/database.sqlite database/backups/database-$(date +%Y%m%d).sqlite
+
+# Or use SQLite's backup command
+sqlite3 database/database.sqlite ".backup 'database/backups/backup-$(date +%Y%m%d).sqlite'"
+```
+
+For MySQL/PostgreSQL:
+```bash
+# MySQL
+mysqldump -u username -p database_name > backup-$(date +%Y%m%d).sql
+
+# PostgreSQL
+pg_dump database_name > backup-$(date +%Y%m%d).sql
+```
+
+**Automated Daily Backups**
+
+Add to crontab:
+```cron
+0 2 * * * cd /path/to/sweepsquad && cp database/database.sqlite database/backups/database-$(date +\%Y\%m\%d).sqlite
+```
+
+**File Backups**
+
+If storing user uploads:
+```bash
+# Backup storage directory
+tar -czf storage-backup-$(date +%Y%m%d).tar.gz storage/app/public
+```
+
+### Deployment Updates
+
+When deploying updates:
+
+```bash
+# 1. Put application in maintenance mode
+php artisan down
+
+# 2. Pull latest code
+git pull origin main
+
+# 3. Install dependencies
+composer install --optimize-autoloader --no-dev
+npm ci
+
+# 4. Build frontend
+npm run build
+
+# 5. Run migrations
+php artisan migrate --force
+
+# 6. Clear and rebuild caches
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# 7. Restart queue workers
+php artisan queue:restart
+
+# 8. Bring application back up
+php artisan up
+```
+
+### Deployment Script
+
+Create a `deploy.sh` script:
+
+```bash
+#!/bin/bash
+set -e
+
+echo "🚀 Deploying SweepSquad..."
+
+# Maintenance mode
+php artisan down
+
+# Update code
+git pull origin main
+
+# Dependencies
+composer install --optimize-autoloader --no-dev
+npm ci
+npm run build
+
+# Database
+php artisan migrate --force
+
+# Optimize
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# Restart queue
+php artisan queue:restart
+
+# Back online
+php artisan up
+
+echo "✅ Deployment complete!"
+```
+
+### SSL Certificate
+
+**Using Let's Encrypt (Free)**:
+
+```bash
+# Install Certbot
+sudo apt install certbot python3-certbot-nginx
+
+# Obtain certificate (Nginx)
+sudo certbot --nginx -d your-domain.com
+
+# Obtain certificate (Apache)
+sudo certbot --apache -d your-domain.com
+
+# Auto-renewal is configured automatically
+```
+
+### Post-Deployment Verification
+
+1. Visit your domain and verify HTTPS is working
+2. Test user registration and login
+3. Test creating groups and invites
+4. Test marking items as cleaned
+5. Verify coins and streaks are updating
+6. Check logs for any errors:
+   ```bash
+   tail -f storage/logs/laravel.log
+   ```
+7. Verify queue worker is processing jobs:
+   ```bash
+   php artisan queue:monitor
+   ```
+
+### Troubleshooting
+
+**500 Internal Server Error**:
+- Check storage/logs/laravel.log
+- Verify file permissions on storage/ and bootstrap/cache/
+- Ensure APP_KEY is set in .env
+- Check web server error logs
+
+**Assets not loading**:
+- Verify npm run build completed successfully
+- Check public/build/ directory exists and contains files
+- Clear browser cache
+
+**Queue not processing**:
+- Verify supervisor is running: `sudo supervisorctl status`
+- Check worker logs in storage/logs/
+- Restart worker: `php artisan queue:restart`
+
+**Database connection errors**:
+- For SQLite: Verify file exists and is writable
+- For MySQL/PostgreSQL: Check credentials in .env
+- Test connection: `php artisan tinker` then `DB::connection()->getPdo();`
+
 ## Contributing
 
 1. Follow existing code conventions

@@ -3,11 +3,9 @@
 use App\Models\CleaningLog;
 use App\Models\Group;
 use Illuminate\Support\Facades\DB;
-use Livewire\Attributes\Reactive;
 use Livewire\Volt\Component;
 
 new class extends Component {
-    #[Reactive]
     public Group $group;
 
     public string $period = 'week';
@@ -26,7 +24,7 @@ new class extends Component {
             'all' => null,
         };
 
-        // Top cleaners (by coins earned)
+        // Top cleaners (by coins earned in cleaning logs)
         $topCleaners = CleaningLog::query()
             ->where('group_id', $this->group->id)
             ->when($startDate, fn($query) => $query->where('cleaned_at', '>=', $startDate))
@@ -36,6 +34,21 @@ new class extends Component {
             ->limit(10)
             ->with('user')
             ->get();
+
+        // If no cleaning logs exist for the period, show all members ordered by their total coins
+        if ($topCleaners->isEmpty()) {
+            $topCleaners = $this->group->members()
+                ->orderByDesc('total_coins')
+                ->limit(10)
+                ->get()
+                ->map(function ($user) {
+                    return (object) [
+                        'user' => $user,
+                        'total_coins' => $user->total_coins,
+                        'clean_count' => 0,
+                    ];
+                });
+        }
 
         // Most consistent member (most days with cleanings)
         $mostConsistent = CleaningLog::query()
@@ -59,7 +72,7 @@ new class extends Component {
     <div class="space-y-6">
         <div class="flex items-center justify-between">
             <div>
-                <flux:heading size="lg">Group Leaderboard</flux:heading>
+                <flux:heading size="lg">Leaderboard</flux:heading>
                 <flux:text>See who's cleaning the most</flux:text>
             </div>
 
@@ -81,7 +94,7 @@ new class extends Component {
             <flux:heading size="md" class="mb-4">Top Cleaners</flux:heading>
             @if ($topCleaners->isEmpty())
                 <div class="rounded-lg border border-neutral-200 bg-white p-8 text-center dark:border-neutral-700 dark:bg-neutral-800">
-                    <flux:text>No cleaning data available for this period</flux:text>
+                    <flux:text>No cleaning data available yet. Start cleaning to see the leaderboard!</flux:text>
                 </div>
             @else
                 <div class="space-y-2">
@@ -93,7 +106,9 @@ new class extends Component {
                             <flux:avatar :src="null" :alt="$log->user->name" />
                             <div class="flex-1">
                                 <flux:heading size="sm">{{ $log->user->name }}</flux:heading>
-                                <flux:text class="text-sm">{{ $log->clean_count }} cleans</flux:text>
+                                @if($log->clean_count > 0)
+                                    <flux:text class="text-sm">{{ $log->clean_count }} cleans</flux:text>
+                                @endif
                             </div>
                             <div class="text-right">
                                 <div class="flex items-center gap-1">

@@ -52,7 +52,7 @@ new class extends Component
 
         session()->flash('success', 'Group deleted successfully.');
 
-        $this->redirect(route('groups.index'), navigate: true);
+        $this->redirectRoute('groups.index', navigate: true);
     }
 
     public function leaveGroup(LeaveGroupAction $action): void
@@ -351,7 +351,7 @@ new class extends Component
         </div>
 
         {{-- Cleaning Items Tree --}}
-        <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700">
+        <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 mb-6">
             @if($items->isEmpty())
                 <div class="p-8 text-center animate-fade-in">
                     <div class="text-5xl mb-3">📝</div>
@@ -387,6 +387,19 @@ new class extends Component
                     @endforeach
                 </div>
             @endif
+        </div>
+
+        {{-- Group Statistics Section --}}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {{-- Leaderboard --}}
+            <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 p-6">
+                <livewire:groups.leaderboard :group="$group" />
+            </div>
+
+            {{-- Recent Activity --}}
+            <div class="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 p-6">
+                <livewire:groups.recent-activity :group="$group" />
+            </div>
         </div>
     </div>
 

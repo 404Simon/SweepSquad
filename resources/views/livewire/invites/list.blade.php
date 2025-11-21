@@ -59,7 +59,7 @@ new class extends Component
 
 <div class="space-y-4" x-data>
     <div class="flex items-center justify-between">
-        <flux:heading size="md">Invite Links</flux:heading>
+        <flux:heading size="md">Invite Members</flux:heading>
         <flux:button 
             variant="primary" 
             size="sm"
