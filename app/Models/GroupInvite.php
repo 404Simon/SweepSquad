@@ -51,7 +51,7 @@ final class GroupInvite extends Model
     {
         parent::boot();
 
-        self::creating(function (GroupInvite $invite) {
+        self::creating(function (GroupInvite $invite): void {
             if (! $invite->uuid) {
                 $invite->uuid = Str::uuid();
             }

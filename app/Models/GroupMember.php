@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\GroupRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-final class GroupMember extends Model
+final class GroupMember extends Pivot
 {
     /** @use HasFactory<\Database\Factories\GroupMemberFactory> */
     use HasFactory;
+
+    protected $table = 'group_members';
 
     protected $fillable = [
         'group_id',
@@ -42,6 +45,7 @@ final class GroupMember extends Model
     {
         return [
             'joined_at' => 'datetime',
+            'role' => GroupRole::class,
         ];
     }
 }

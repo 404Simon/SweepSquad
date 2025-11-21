@@ -31,4 +31,10 @@ Route::middleware(['auth'])->group(function () {
             ),
         )
         ->name('two-factor.show');
+
+    // Group routes
+    Volt::route('groups', 'groups.index')->name('groups.index');
+    Volt::route('groups/create', 'groups.create')->name('groups.create');
+    Volt::route('groups/{id}', 'groups.show')->name('groups.show');
+    Volt::route('groups/{id}/edit', 'groups.edit')->name('groups.edit');
 });

@@ -21,5 +21,6 @@ test('user can register', function () {
 
 test('guests cannot access dashboard', function () {
     visit('/dashboard')
+        ->assertNoSmoke()
         ->assertPathIs('/login');
 });

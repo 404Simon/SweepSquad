@@ -36,7 +36,8 @@ final class Group extends Model
     {
         return $this->belongsToMany(User::class, 'group_members')
             ->withPivot('role', 'joined_at')
-            ->withTimestamps();
+            ->withTimestamps()
+            ->using(GroupMember::class);
     }
 
     /**
@@ -75,7 +76,7 @@ final class Group extends Model
     {
         parent::boot();
 
-        self::creating(function (Group $group) {
+        self::creating(function (Group $group): void {
             if (! $group->uuid) {
                 $group->uuid = Str::uuid();
             }
