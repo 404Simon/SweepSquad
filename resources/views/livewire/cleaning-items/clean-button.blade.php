@@ -1,12 +1,10 @@
 <?php
 
 use App\Models\CleaningItem;
-use Livewire\Attributes\Modelable;
 use Livewire\Volt\Component;
 
 use function Livewire\Volt\{state};
 
-#[Modelable]
 state('itemId');
 
 $openModal = function () {

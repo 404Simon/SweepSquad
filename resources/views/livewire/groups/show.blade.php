@@ -200,7 +200,7 @@ new class extends Component {
                     <flux:button
                         variant="primary"
                         wire:navigate
-                        href="{{ route('cleaning-items.create', ['group' => $group->id]) }}"
+                        href="{{ route('cleaning-items.create', ['groupId' => $group->id]) }}"
                     >
                         Add Item
                     </flux:button>
@@ -334,7 +334,7 @@ new class extends Component {
                         <flux:button
                             variant="primary"
                             wire:navigate
-                            href="{{ route('cleaning-items.create', ['group' => $group->id]) }}"
+                            href="{{ route('cleaning-items.create', ['groupId' => $group->id]) }}"
                         >
                             Add Your First Item
                         </flux:button>

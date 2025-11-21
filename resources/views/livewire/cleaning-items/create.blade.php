@@ -1,36 +1,43 @@
 <?php
 
 use App\Actions\CleaningItems\CreateCleaningItemAction;
-use App\Models\Group;
 use App\Models\CleaningItem;
+use App\Models\Group;
 use Livewire\Volt\Component;
 
-use function Livewire\Volt\{layout, state, mount};
+use function Livewire\Volt\layout;
 
 layout('components.layouts.app');
 
-state([
-    'groupId',
-    'parentId' => null,
-    'name' => '',
-    'description' => '',
-    'cleaningFrequencyHours' => null,
-    'baseCoinReward' => 0,
-    'group',
-    'parent' => null,
-]);
+new class extends Component
+{
+    public int $groupId;
 
-mount(function (int $groupId, ?int $parentId = null) {
-    $this->groupId = $groupId;
-    $this->parentId = $parentId;
-    $this->group = Group::query()->findOrFail($groupId);
-    
-    if ($parentId !== null) {
-        $this->parent = CleaningItem::query()->findOrFail($parentId);
+    public ?int $parentId = null;
+
+    public string $name = '';
+
+    public string $description = '';
+
+    public ?int $cleaningFrequencyHours = null;
+
+    public int $baseCoinReward = 0;
+
+    public Group $group;
+
+    public ?CleaningItem $parent = null;
+
+    public function mount(int $groupId, ?int $parentId = null): void
+    {
+        $this->groupId = $groupId;
+        $this->parentId = $parentId;
+        $this->group = Group::query()->findOrFail($groupId);
+
+        if ($parentId !== null) {
+            $this->parent = CleaningItem::query()->findOrFail($parentId);
+        }
     }
-});
 
-new class extends Component {
     /**
      * Create a new cleaning item.
      */
@@ -43,7 +50,7 @@ new class extends Component {
             'baseCoinReward' => ['required', 'integer', 'min:0'],
         ]);
 
-        $item = $action->handle(
+        $action->handle(
             $this->group,
             $validated['name'],
             $validated['description'] ?? null,

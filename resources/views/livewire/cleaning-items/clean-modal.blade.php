@@ -3,48 +3,58 @@
 use App\Actions\CleaningItems\MarkAsCleanedAction;
 use App\Models\CleaningItem;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
 
-use function Livewire\Volt\{state};
+new class extends Component {
+    public bool $showModal = false;
 
-state(['showModal' => false, 'item' => null, 'notes' => '', 'coinsEarned' => 0, 'showSuccess' => false]);
+    public ?CleaningItem $item = null;
 
-$openModal = function (int $itemId) {
-    $this->item = CleaningItem::findOrFail($itemId);
-    $this->showModal = true;
-    $this->notes = '';
-    $this->coinsEarned = 0;
-    $this->showSuccess = false;
-};
+    public string $notes = '';
 
-$closeModal = function () {
-    $this->showModal = false;
-    $this->item = null;
-    $this->notes = '';
-};
+    public int $coinsEarned = 0;
 
-$markAsCleaned = function (MarkAsCleanedAction $action) {
-    if (!$this->item) {
-        return;
+    public bool $showSuccess = false;
+
+    public function openModal(int $itemId): void
+    {
+        $this->item = CleaningItem::findOrFail($itemId);
+        $this->showModal = true;
+        $this->notes = '';
+        $this->coinsEarned = 0;
+        $this->showSuccess = false;
     }
 
-    $log = $action->handle($this->item, User::find(auth()->id()), $this->notes);
-    $this->coinsEarned = $log->coins_earned;
-    
-    $this->showModal = false;
-    $this->showSuccess = true;
-    
-    $this->dispatch('item-cleaned');
-};
+    public function closeModal(): void
+    {
+        $this->showModal = false;
+        $this->item = null;
+        $this->notes = '';
+    }
 
-$closeSuccess = function () {
-    $this->showSuccess = false;
-    $this->item = null;
-    $this->coinsEarned = 0;
-};
+    public function markAsCleaned(MarkAsCleanedAction $action): void
+    {
+        if (! $this->item) {
+            return;
+        }
 
-new class extends Component {
-    //
+        $user = User::findOrFail(Auth::id());
+        $log = $action->handle($this->item, $user, $this->notes);
+        $this->coinsEarned = $log->coins_earned;
+
+        $this->showModal = false;
+        $this->showSuccess = true;
+
+        $this->dispatch('item-cleaned');
+    }
+
+    public function closeSuccess(): void
+    {
+        $this->showSuccess = false;
+        $this->item = null;
+        $this->coinsEarned = 0;
+    }
 }; ?>
 
 <div>
