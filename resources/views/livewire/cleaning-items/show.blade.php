@@ -18,11 +18,17 @@ mount(function (int $id) {
 
 $children = computed(fn () => $this->item->children()->orderBy('order')->get());
 
+$refreshItem = function () {
+    $this->item = CleaningItem::query()
+        ->with(['children', 'lastCleanedByUser', 'parent'])
+        ->findOrFail($this->itemId);
+};
+
 new class extends Component {
     //
 }; ?>
 
-<div>
+<div x-on:item-cleaned.window="$wire.call('refreshItem')">
     <div class="max-w-4xl mx-auto px-4 py-8">
         <div class="mb-6 flex items-center justify-between">
             <div>
@@ -129,6 +135,9 @@ new class extends Component {
             @endif
 
             <div class="flex gap-3">
+                @if ($item->cleaning_frequency_hours)
+                    <livewire:cleaning-items.clean-button :item-id="$item->id" />
+                @endif
                 <flux:button
                     variant="primary"
                     wire:navigate
@@ -146,4 +155,6 @@ new class extends Component {
             </div>
         </div>
     </div>
+
+    <livewire:cleaning-items.clean-modal />
 </div>

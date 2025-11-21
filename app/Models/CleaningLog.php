@@ -48,6 +48,38 @@ final class CleaningLog extends Model
     }
 
     /**
+     * Scope a query to only include recent logs.
+     */
+    public function scopeRecent($query): void
+    {
+        $query->orderBy('cleaned_at', 'desc');
+    }
+
+    /**
+     * Scope a query to only include logs for a specific user.
+     */
+    public function scopeForUser($query, int $userId): void
+    {
+        $query->where('user_id', $userId);
+    }
+
+    /**
+     * Scope a query to only include logs for a specific item.
+     */
+    public function scopeForItem($query, int $itemId): void
+    {
+        $query->where('cleaning_item_id', $itemId);
+    }
+
+    /**
+     * Scope a query to only include logs for a specific group.
+     */
+    public function scopeForGroup($query, int $groupId): void
+    {
+        $query->where('group_id', $groupId);
+    }
+
+    /**
      * Get the attributes that should be cast.
      */
     protected function casts(): array

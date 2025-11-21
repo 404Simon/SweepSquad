@@ -34,6 +34,9 @@ final class UserFactory extends Factory
             'two_factor_secret' => Str::random(10),
             'two_factor_recovery_codes' => Str::random(10),
             'two_factor_confirmed_at' => now(),
+            'total_coins' => 0,
+            'current_streak' => 0,
+            'last_cleaned_at' => null,
         ];
     }
 
