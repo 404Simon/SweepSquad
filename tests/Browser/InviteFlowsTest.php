@@ -164,5 +164,5 @@ test('single use invite becomes invalid after first use', function () {
 
     visit('/invites/ONCE123')
         ->assertNoSmoke()
-        ->assertSee('no longer valid');
+        ->assertSee('already been used');
 });

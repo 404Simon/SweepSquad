@@ -50,4 +50,4 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Invite routes (accessible to all users, authenticated or not)
-Volt::route('invite/{uuid}', 'invites.accept')->name('invites.accept');
+Volt::route('invites/{code}', 'invites.accept')->name('invites.accept');

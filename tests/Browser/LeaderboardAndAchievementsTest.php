@@ -54,8 +54,8 @@ test('user can view their achievements', function () {
     $user = User::factory()->create();
     UserAchievement::factory()->create([
         'user_id' => $user->id,
-        'achievement_key' => 'first_clean',
-        'awarded_at' => now(),
+        'achievement_code' => 'first_clean',
+        'earned_at' => now(),
     ]);
 
     actingAs($user);
@@ -73,8 +73,8 @@ test('achievement badge shows on user profile', function () {
 
     UserAchievement::factory()->create([
         'user_id' => $user->id,
-        'achievement_key' => 'streak_7',
-        'awarded_at' => now(),
+        'achievement_code' => 'streak_master_7',
+        'earned_at' => now(),
     ]);
 
     actingAs($user);
@@ -106,7 +106,7 @@ test('user sees current streak on dashboard', function () {
     visit('/dashboard')
         ->assertNoSmoke()
         ->assertSee('7')
-        ->assertSee('day streak');
+        ->assertSee('Current streak');
 });
 
 test('cleaning activity shows in recent logs', function () {

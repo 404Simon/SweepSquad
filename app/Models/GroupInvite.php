@@ -17,6 +17,7 @@ final class GroupInvite extends Model
 
     protected $fillable = [
         'uuid',
+        'code',
         'group_id',
         'created_by',
         'type',
@@ -116,6 +117,10 @@ final class GroupInvite extends Model
         self::creating(function (GroupInvite $invite): void {
             if (! $invite->uuid) {
                 $invite->uuid = Str::uuid();
+            }
+
+            if (! $invite->code) {
+                $invite->code = mb_strtoupper(Str::random(10));
             }
         });
     }

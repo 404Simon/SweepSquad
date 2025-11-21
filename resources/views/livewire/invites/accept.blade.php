@@ -9,29 +9,34 @@ use function Livewire\Volt\{layout, state};
 
 layout('components.layouts.app');
 
-state(['uuid']);
+state(['code']);
 
 new class extends Component {
-    public string $uuid;
+    public string $code;
     public ?GroupInvite $invite = null;
     public ?string $errorMessage = null;
 
-    public function mount(string $uuid): void
+    public function mount(string $code): void
     {
-        $this->uuid = $uuid;
-        $this->invite = GroupInvite::where('uuid', $uuid)
-            ->with(['group', 'creator'])
+        $this->code = $code;
+        $this->invite = GroupInvite::where('code', $code)
+            ->with(['group.members', 'creator'])
             ->first();
 
         // Check if invite exists and is valid
         if ($this->invite === null) {
-            $this->errorMessage = 'Invite not found.';
+            $this->errorMessage = 'Invalid invite code.';
         } elseif (! $this->invite->isValid()) {
             if ($this->invite->used_at !== null) {
                 $this->errorMessage = 'This invite has already been used.';
             } else {
                 $this->errorMessage = 'This invite has expired.';
             }
+        }
+
+        // Check if user is already a member
+        if ($this->invite && Auth::check() && $this->invite->group->members()->where('user_id', Auth::id())->exists()) {
+            $this->errorMessage = 'You are already a member of this group.';
         }
     }
 
@@ -41,7 +46,7 @@ new class extends Component {
     public function acceptInvite(AcceptInviteAction $action): void
     {
         if (! Auth::check()) {
-            session()->put('invite_uuid', $this->uuid);
+            session()->put('invite_code', $this->code);
             $this->redirect(route('login'), navigate: true);
             return;
         }
@@ -98,13 +103,27 @@ new class extends Component {
                         @endif
                     </div>
 
+                    @if ($invite->group->members && $invite->group->members->isNotEmpty())
+                        <div class="border-t border-zinc-200 dark:border-zinc-700 pt-4">
+                            <flux:text class="font-semibold mb-2">Group Members ({{ $invite->group->members->count() }})</flux:text>
+                            <div class="space-y-2">
+                                @foreach ($invite->group->members as $member)
+                                    <div class="flex items-center gap-2">
+                                        <flux:avatar size="sm" />
+                                        <flux:text>{{ $member->name }}</flux:text>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
                     <div class="flex gap-3 pt-4">
                         <flux:button 
                             type="button" 
                             variant="primary"
                             wire:click="acceptInvite"
                         >
-                            Accept Invite
+                            Join Group
                         </flux:button>
                         <flux:button 
                             type="button" 

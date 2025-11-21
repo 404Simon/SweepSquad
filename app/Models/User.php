@@ -27,6 +27,7 @@ final class User extends Authenticatable
         'password',
         'total_coins',
         'current_streak',
+        'longest_streak',
         'last_cleaned_at',
     ];
 
@@ -134,6 +135,11 @@ final class User extends Authenticatable
             $this->current_streak = 1;
         }
 
+        // Update longest streak if current streak is now higher
+        if ($this->current_streak > $this->longest_streak) {
+            $this->longest_streak = $this->current_streak;
+        }
+
         $this->last_cleaned_at = $now;
         $this->save();
     }
@@ -180,6 +186,7 @@ final class User extends Authenticatable
             'password' => 'hashed',
             'total_coins' => 'integer',
             'current_streak' => 'integer',
+            'longest_streak' => 'integer',
             'last_cleaned_at' => 'datetime',
         ];
     }

@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('group_invites', function (Blueprint $table): void {
             $table->id();
             $table->uuid()->unique();
+            $table->string('code')->unique();
             $table->foreignId('group_id')->constrained()->onDelete('cascade');
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->enum('type', ['permanent', 'single_use', 'time_limited'])->default('permanent');
