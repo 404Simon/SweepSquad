@@ -38,3 +38,6 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('groups/{id}', 'groups.show')->name('groups.show');
     Volt::route('groups/{id}/edit', 'groups.edit')->name('groups.edit');
 });
+
+// Invite routes (accessible to all users, authenticated or not)
+Volt::route('invite/{uuid}', 'invites.accept')->name('invites.accept');

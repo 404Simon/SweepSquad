@@ -18,7 +18,7 @@ return new class extends Migration
             $table->uuid()->unique();
             $table->foreignId('group_id')->constrained()->onDelete('cascade');
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
-            $table->enum('type', ['link', 'email', 'direct'])->default('link');
+            $table->enum('type', ['permanent', 'single_use', 'time_limited'])->default('permanent');
             $table->timestamp('expires_at')->nullable();
             $table->foreignId('used_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamp('used_at')->nullable();

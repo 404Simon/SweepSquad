@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -21,6 +22,7 @@ final class GroupFactory extends Factory
         return [
             'name' => fake()->words(3, true),
             'description' => fake()->optional()->sentence(),
+            'owner_id' => User::factory(),
         ];
     }
 }
