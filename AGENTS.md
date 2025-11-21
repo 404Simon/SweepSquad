@@ -336,7 +336,8 @@ document.addEventListener('livewire:init', function () {
 <code-snippet name="Volt Functional Component Example" lang="php">
 @volt
 <?php
-use function Livewire\Volt\{state, computed};
+use function Livewire\Volt\computed;
+use function Livewire\Volt\state;
 
 state(['count' => 0]);
 
@@ -423,16 +424,18 @@ test('product form creates product', function () {
 <?php
 
 use App\Models\Product;
-use function Livewire\Volt\{state, computed};
+
+use function Livewire\Volt\computed;
+use function Livewire\Volt\state;
 
 state(['editing' => null, 'search' => '']);
 
-$products = computed(fn() => Product::when($this->search,
-    fn($q) => $q->where('name', 'like', "%{$this->search}%")
+$products = computed(fn () => Product::when($this->search,
+    fn ($q) => $q->where('name', 'like', "%{$this->search}%")
 )->get());
 
-$edit = fn(Product $product) => $this->editing = $product->id;
-$delete = fn(Product $product) => $product->delete();
+$edit = fn (Product $product) => $this->editing = $product->id;
+$delete = fn (Product $product) => $product->delete();
 
 ?>
 
@@ -458,8 +461,9 @@ $delete = fn(Product $product) => $product->delete();
 
 ## Laravel Pint Code Formatter
 
-- You must run `vendor/bin/pint --dirty` before finalizing changes to ensure your code matches the project's expected style.
+- After making code changes, run `vendor/bin/rector` first to automatically refactor and improve code quality, then run `vendor/bin/pint --dirty` to ensure your code matches the project's expected style.
 - Do not run `vendor/bin/pint --test`, simply run `vendor/bin/pint` to fix any formatting issues.
+- The workflow is: make changes → run rector → run pint → run tests.
 - This project uses an enhanced Pint configuration provided by the essentials package with rules including:
   - `declare_strict_types` - Enforces strict types in all files
   - `final_class` - Enforces final classes by default
