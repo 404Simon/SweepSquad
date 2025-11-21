@@ -43,6 +43,10 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('cleaning-items/{id}', 'cleaning-items.show')->name('cleaning-items.show');
     Volt::route('cleaning-items/{id}/edit', 'cleaning-items.edit')->name('cleaning-items.edit');
     Volt::route('cleaning-items/tree/{groupId}', 'cleaning-items.tree')->name('cleaning-items.tree');
+
+    // Profile / Stats routes
+    Volt::route('profile/stats', 'profile.stats')->name('profile.stats');
+    Volt::route('profile/achievements', 'profile.achievements')->name('profile.achievements');
 });
 
 // Invite routes (accessible to all users, authenticated or not)

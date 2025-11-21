@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\CleaningItems;
 
+use App\Actions\Achievements\CheckAchievementsAction;
 use App\Models\CleaningItem;
 use App\Models\CleaningLog;
 use App\Models\User;
@@ -11,6 +12,10 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class MarkAsCleanedAction
 {
+    public function __construct(
+        private CheckAchievementsAction $checkAchievements,
+    ) {}
+
     /**
      * Mark a cleaning item as cleaned and award coins.
      */
@@ -36,7 +41,7 @@ final readonly class MarkAsCleanedAction
             ]);
 
             // Create CleaningLog entry
-            return CleaningLog::create([
+            $log = CleaningLog::create([
                 'cleaning_item_id' => $item->id,
                 'user_id' => $user->id,
                 'group_id' => $item->group_id,
@@ -45,6 +50,11 @@ final readonly class MarkAsCleanedAction
                 'notes' => $notes,
                 'cleaned_at' => now(),
             ]);
+
+            // Check for achievements
+            $this->checkAchievements->handle($user);
+
+            return $log;
         });
     }
 

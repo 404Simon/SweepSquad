@@ -149,6 +149,26 @@ final class User extends Authenticatable
     }
 
     /**
+     * Check if the user has earned a specific achievement.
+     */
+    public function hasAchievement(\App\Achievement $achievement): bool
+    {
+        return $this->achievements()
+            ->where('achievement_code', $achievement->value)
+            ->exists();
+    }
+
+    /**
+     * Get all earned achievement codes.
+     */
+    public function earnedAchievements(): array
+    {
+        return $this->achievements()
+            ->pluck('achievement_code')
+            ->all();
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>

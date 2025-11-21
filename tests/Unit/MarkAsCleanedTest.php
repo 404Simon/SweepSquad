@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Actions\Achievements\AwardAchievementAction;
+use App\Actions\Achievements\CheckAchievementsAction;
 use App\Actions\CleaningItems\MarkAsCleanedAction;
 use App\Models\CleaningItem;
 use App\Models\CleaningLog;
@@ -27,7 +29,9 @@ beforeEach(function () {
         'last_cleaned_at' => null,
     ]);
 
-    $this->action = new MarkAsCleanedAction();
+    $this->action = new MarkAsCleanedAction(
+        new CheckAchievementsAction(new AwardAchievementAction)
+    );
 });
 
 test('marks item as cleaned and creates log entry', function () {
